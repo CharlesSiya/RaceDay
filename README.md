@@ -63,8 +63,6 @@ Part 1 documentation and SQL script are present.
 
 YouTube video:
 
-PASTE YOUR UNLISTED YOUTUBE LINK HERE
-
 ## AI Disclosure
 
 AI tools were used as a supplementary learning and
