@@ -1,7 +1,5 @@
 # RaceDay API Endpoint Plan
 
-## Purpose
-
 This document defines the RESTful API endpoints planned for
 the RaceDay event management system.
 
@@ -42,3 +40,17 @@ the API implementation in Part 2.
 | GET | /api/results/me | Returns the participant's results | Participant | None | 200 OK |
 | GET | /api/events/{eventId}/results | Returns results for an event | Organiser | None | 200 OK |
 | GET | /api/results/{id} | Returns one result | Participant/Organiser | None | 200 OK |
+
+Standard HTTP Status Codes
+
+The API will use standard HTTP status codes.
+
+- 200 OK — successful retrieval or update
+- 201 Created — successful creation
+- 204 No Content — successful deletion
+- 400 Bad Request — invalid request
+- 401 Unauthorized — authentication required
+- 403 Forbidden — authenticated user does not have permission
+- 404 Not Found — requested resource does not exist
+- 409 Conflict — operation conflicts with existing data
+- 500 Internal Server Error — unexpected server-side error
