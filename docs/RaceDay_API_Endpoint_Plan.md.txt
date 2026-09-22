@@ -1,0 +1,44 @@
+# RaceDay API Endpoint Plan
+
+## Purpose
+
+This document defines the RESTful API endpoints planned for
+the RaceDay event management system.
+
+The system supports two roles:
+
+- Organiser
+- Participant
+
+The endpoint plan is created during Part 1 and will guide
+the API implementation in Part 2.
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| POST | /api/auth/register | Creates a new participant account | Public | FirstName, LastName, Email, Password | 201 Created |
+| POST | /api/auth/login | Authenticates a user | Public | Email, Password | 200 OK with token |
+| GET | /api/users/me | Returns the logged-in user's profile | Any authenticated user | None | 200 OK |
+| PUT | /api/users/me | Updates the logged-in user's profile | Any authenticated user | Profile fields | 200 OK |
+| GET | /api/events | Returns available events | Public | None | 200 OK |
+| GET | /api/events/{id} | Returns one event | Public | None | 200 OK / 404 Not Found |
+| POST | /api/events | Creates an event | Organiser | Event details | 201 Created |
+| PUT | /api/events/{id} | Updates an event | Organiser | Event details | 200 OK / 404 Not Found |
+| DELETE | /api/events/{id} | Deletes an event | Organiser | None | 204 No Content |
+| GET | /api/events/{eventId}/categories | Returns categories for an event | Public | None | 200 OK |
+| POST | /api/events/{eventId}/categories | Creates an event category | Organiser | Category details | 201 Created |
+| PUT | /api/categories/{id} | Updates a category | Organiser | Category details | 200 OK |
+| DELETE | /api/categories/{id} | Deletes a category | Organiser | None | 204 No Content |
+| GET | /api/events/{eventId}/routes | Returns routes for an event | Public | None | 200 OK |
+| POST | /api/events/{eventId}/routes | Creates an event route | Organiser | Route details | 201 Created |
+| PUT | /api/routes/{id} | Updates a route | Organiser | Route details | 200 OK |
+| DELETE | /api/routes/{id} | Deletes a route | Organiser | None | 204 No Content |
+| GET | /api/events/{eventId}/enrollments | Returns event enrolments | Organiser | None | 200 OK |
+| POST | /api/categories/{categoryId}/enrollments | Enrols a participant in a category | Participant | Participant enrolment details | 201 Created |
+| GET | /api/enrollments/me | Returns the participant's enrolments | Participant | None | 200 OK |
+| GET | /api/enrollments/{id} | Returns an enrolment | Participant/Organiser | None | 200 OK |
+| DELETE | /api/enrollments/{id} | Cancels an enrolment | Participant | None | 204 No Content |
+| POST | /api/enrollments/{enrollmentId}/result | Captures a participant result | Organiser | Result details | 201 Created |
+| PUT | /api/results/{id} | Updates a result | Organiser | Result details | 200 OK |
+| GET | /api/results/me | Returns the participant's results | Participant | None | 200 OK |
+| GET | /api/events/{eventId}/results | Returns results for an event | Organiser | None | 200 OK |
+| GET | /api/results/{id} | Returns one result | Participant/Organiser | None | 200 OK |
