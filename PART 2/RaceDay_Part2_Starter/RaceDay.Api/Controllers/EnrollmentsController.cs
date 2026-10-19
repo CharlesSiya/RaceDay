@@ -25,8 +25,13 @@ public class EnrollmentsController(RaceDayContext db) : ControllerBase
         if (await db.Enrollments.AnyAsync(e => e.ParticipantId == CurrentUserId && e.CategoryId == category.CategoryId))
             return Conflict(new { message = "You are already enrolled in this category." });
 
-        var enrollment = new Enrollment { ParticipantId = CurrentUserId, CategoryId = category.CategoryId,
-            EnrollmentDate = DateTime.UtcNow, Status = "Enrolled" };
+        var enrollment = new Enrollment
+        {
+            ParticipantId = CurrentUserId,
+            CategoryId = category.CategoryId,
+            EnrollmentDate = DateTime.UtcNow,
+            Status = "Enrolled"
+        };
         db.Enrollments.Add(enrollment);
         await db.SaveChangesAsync();
         return Created($"/api/enrollments/{enrollment.EnrollmentId}", enrollment);
@@ -38,9 +43,16 @@ public class EnrollmentsController(RaceDayContext db) : ControllerBase
     {
         var items = await db.Enrollments.Include(e => e.Participant).Include(e => e.Category).ThenInclude(c => c!.Event)
             .Where(e => e.Category!.Event!.OrganiserId == CurrentUserId)
-            .Select(e => new { e.EnrollmentId, e.EnrollmentDate, e.Status, e.BibNumber,
+            .Select(e => new {
+                e.EnrollmentId,
+                e.EnrollmentDate,
+                e.Status,
+                e.BibNumber,
                 Participant = e.Participant!.FirstName + " " + e.Participant.LastName,
-                e.Participant.Email, e.Category!.CategoryName, EventName = e.Category.Event!.EventName })
+                e.Participant.Email,
+                e.Category!.CategoryName,
+                EventName = e.Category.Event!.EventName
+            })
             .ToListAsync();
         return Ok(items);
     }
@@ -49,7 +61,14 @@ public class EnrollmentsController(RaceDayContext db) : ControllerBase
     [HttpGet("enrollments/mine"), Authorize(Roles = UserRoles.Participant)]
     public async Task<IActionResult> Mine() => Ok(await db.Enrollments.Include(e => e.Category).ThenInclude(c => c!.Event)
         .Where(e => e.ParticipantId == CurrentUserId)
-        .Select(e => new { e.EnrollmentId, e.EnrollmentDate, e.Status, e.BibNumber,
-            e.Category!.CategoryName, EventName = e.Category.Event!.EventName, e.Category.DistanceKm })
+        .Select(e => new {
+            e.EnrollmentId,
+            e.EnrollmentDate,
+            e.Status,
+            e.BibNumber,
+            e.Category!.CategoryName,
+            EventName = e.Category.Event!.EventName,
+            e.Category.DistanceKm
+        })
         .ToListAsync());
 }

@@ -1,84 +1,88 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RaceDay.Api.Data;
-using RaceDay.Api.DTOs;
-using RaceDay.Api.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace RaceDay.Api.Controllers;
+namespace RaceDay.Api.Models;
 
-[ApiController, Route("api/events")]
-public class EventsController(RaceDayContext db) : ControllerBase
+public static class UserRoles
 {
-    private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    private static bool ValidType(string type) => new[] { "Run", "Walk", "Cycle" }.Contains(type, StringComparer.OrdinalIgnoreCase);
+    public const string Organiser = "Organiser";
+    public const string Participant = "Participant";
+}
 
-    /// <summary>List events. Public read access.</summary>
-    [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await db.Events
-        .Include(e => e.Routes).Include(e => e.Categories)
-        .OrderBy(e => e.EventDate).ToListAsync());
+public class User
+{
+    public int UserId { get; set; }
+    [Required, MaxLength(80)] public string FirstName { get; set; } = "";
+    [Required, MaxLength(80)] public string LastName { get; set; } = "";
+    [Required, MaxLength(256), EmailAddress] public string Email { get; set; } = "";
+    [Required] public string PasswordHash { get; set; } = "";
+    [Required, MaxLength(20)] public string Role { get; set; } = UserRoles.Participant;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public ICollection<Event> OrganisedEvents { get; set; } = new List<Event>();
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+}
 
-    /// <summary>Get one event and its routes and categories.</summary>
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> Get(int id)
-    {
-        var ev = await db.Events.Include(e => e.Routes).Include(e => e.Categories).FirstOrDefaultAsync(e => e.EventId == id);
-        return ev is null ? NotFound() : Ok(ev);
-    }
+public class Event
+{
+    public int EventId { get; set; }
+    public int OrganiserId { get; set; }
+    [Required, MaxLength(150)] public string EventName { get; set; } = "";
+    [MaxLength(2000)] public string Description { get; set; } = "";
+    public DateTime EventDate { get; set; }
+    [Required, MaxLength(200)] public string Venue { get; set; } = "";
+    [Required, MaxLength(100)] public string Province { get; set; } = "";
+    [Required, MaxLength(20)] public string Status { get; set; } = "Scheduled";
+    [Required, MaxLength(10)] public string EventType { get; set; } = "Run"; // Added to meet Part 2 requirement.
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public User? Organiser { get; set; }
+    public ICollection<Category> Categories { get; set; } = new List<Category>();
+    public ICollection<Route> Routes { get; set; } = new List<Route>();
+}
 
-    /// <summary>Create an event and its route. Organiser only.</summary>
-    [HttpPost, Authorize(Roles = UserRoles.Organiser)]
-    public async Task<IActionResult> Create(EventRequest request)
-    {
-        if (!ValidType(request.EventType)) return BadRequest(new { message = "EventType must be Run, Walk or Cycle." });
-        var ev = new Event
-        {
-            OrganiserId = CurrentUserId, EventName = request.EventName.Trim(), Description = request.Description,
-            EventDate = request.EventDate, Venue = request.Venue.Trim(), Province = request.Province.Trim(),
-            EventType = request.EventType.Trim(), Status = "Scheduled", CreatedAt = DateTime.UtcNow
-        };
-        ev.Routes.Add(new Route
-        {
-            RouteName = ev.EventName + " Route", DistanceKm = request.DistanceKm,
-            StartLocation = request.StartLocation ?? ev.Venue, FinishLocation = request.FinishLocation ?? ev.Venue,
-            RouteDescription = request.RouteDescription ?? "", MapUrl = request.MapUrl
-        });
-        db.Events.Add(ev);
-        await db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = ev.EventId }, ev);
-    }
+public class Category
+{
+    public int CategoryId { get; set; }
+    public int EventId { get; set; }
+    [Required, MaxLength(100)] public string CategoryName { get; set; } = "";
+    public decimal DistanceKm { get; set; }
+    public int MaxParticipants { get; set; }
+    public decimal EntryFee { get; set; }
+    public Event? Event { get; set; }
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+}
 
-    /// <summary>Update an event owned by the logged-in organiser.</summary>
-    [HttpPut("{id:int}"), Authorize(Roles = UserRoles.Organiser)]
-    public async Task<IActionResult> Update(int id, EventRequest request)
-    {
-        if (!ValidType(request.EventType)) return BadRequest(new { message = "EventType must be Run, Walk or Cycle." });
-        var ev = await db.Events.Include(e => e.Routes).FirstOrDefaultAsync(e => e.EventId == id);
-        if (ev is null) return NotFound();
-        if (ev.OrganiserId != CurrentUserId) return Forbid();
-        ev.EventName = request.EventName.Trim(); ev.Description = request.Description; ev.EventDate = request.EventDate;
-        ev.Venue = request.Venue.Trim(); ev.Province = request.Province.Trim(); ev.EventType = request.EventType.Trim();
-        var route = ev.Routes.FirstOrDefault();
-        if (route is null) ev.Routes.Add(new Route { RouteName = ev.EventName + " Route", DistanceKm = request.DistanceKm });
-        else { route.DistanceKm = request.DistanceKm; route.StartLocation = request.StartLocation ?? ev.Venue;
-            route.FinishLocation = request.FinishLocation ?? ev.Venue; route.RouteDescription = request.RouteDescription ?? ""; route.MapUrl = request.MapUrl; }
-        await db.SaveChangesAsync();
-        return Ok(ev);
-    }
+public class Route
+{
+    public int RouteId { get; set; }
+    public int EventId { get; set; }
+    [Required, MaxLength(150)] public string RouteName { get; set; } = "";
+    public decimal DistanceKm { get; set; }
+    [MaxLength(200)] public string StartLocation { get; set; } = "";
+    [MaxLength(200)] public string FinishLocation { get; set; } = "";
+    [MaxLength(2000)] public string RouteDescription { get; set; } = "";
+    [MaxLength(500)] public string? MapUrl { get; set; }
+    public Event? Event { get; set; }
+}
 
-    /// <summary>Delete an event owned by the logged-in organiser, if it has no enrolments.</summary>
-    [HttpDelete("{id:int}"), Authorize(Roles = UserRoles.Organiser)]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var ev = await db.Events.Include(e => e.Categories).ThenInclude(c => c.Enrollments).FirstOrDefaultAsync(e => e.EventId == id);
-        if (ev is null) return NotFound();
-        if (ev.OrganiserId != CurrentUserId) return Forbid();
-        if (ev.Categories.Any(c => c.Enrollments.Any()))
-            return Conflict(new { message = "Cannot delete an event with enrolments." });
-        db.Events.Remove(ev);
-        await db.SaveChangesAsync();
-        return NoContent();
-    }
+public class Enrollment
+{
+    public int EnrollmentId { get; set; }
+    public int ParticipantId { get; set; }
+    public int CategoryId { get; set; }
+    public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
+    [Required, MaxLength(20)] public string Status { get; set; } = "Enrolled";
+    [MaxLength(20)] public string? BibNumber { get; set; }
+    public User? Participant { get; set; }
+    public Category? Category { get; set; }
+    public Result? Result { get; set; }
+}
+
+public class Result
+{
+    public int ResultId { get; set; }
+    public int EnrollmentId { get; set; }
+    public TimeSpan FinishTime { get; set; }
+    public int Position { get; set; }
+    public decimal PaceMinutesPerKm { get; set; }
+    public DateTime ResultDate { get; set; } = DateTime.UtcNow;
+    public Enrollment? Enrollment { get; set; }
 }
