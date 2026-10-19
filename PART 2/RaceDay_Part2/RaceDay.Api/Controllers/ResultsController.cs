@@ -13,7 +13,7 @@ public class ResultsController(RaceDayContext db) : ControllerBase
 {
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    /// <summary>Capture a result for an enrolment in an event owned by this Organiser.</summary>
+    /// Capture a result for an enrolment in an event owned by this Organiser.
     [HttpPost("enrollments/{enrollmentId:int}/result"), Authorize(Roles = UserRoles.Organiser)]
     public async Task<IActionResult> Capture(int enrollmentId, ResultRequest request)
     {
@@ -36,7 +36,7 @@ public class ResultsController(RaceDayContext db) : ControllerBase
         return Created($"/api/results/{result.ResultId}", result);
     }
 
-    /// <summary>List results for the authenticated Participant only.</summary>
+    /// List results for the authenticated Participant only.
     [HttpGet("results/mine"), Authorize(Roles = UserRoles.Participant)]
     public async Task<IActionResult> MyResults()
     {

@@ -41,7 +41,7 @@ public class CategoriesController(RaceDayContext db) : ControllerBase
         return Created($"/api/events/{eventId}/categories/{category.CategoryId}", category);
     }
 
-    /// <summary>Update a category for an event owned by the organiser.</summary>
+    /// Update a category for an event owned by the organiser.</summary>
     [HttpPut("{categoryId:int}"), Authorize(Roles = UserRoles.Organiser)]
     public async Task<IActionResult> Update(int eventId, int categoryId, CategoryRequest request)
     {

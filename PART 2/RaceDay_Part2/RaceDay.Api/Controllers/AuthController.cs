@@ -16,7 +16,7 @@ public class AuthController(RaceDayContext db, IConfiguration configuration) : C
 {
     private readonly PasswordHasher<User> _hasher = new();
 
-    /// <summary>Register a Participant or an Organiser. Organiser registration requires the configured organiser code.</summary>
+    ///Register a Participant or an Organiser. Organiser registration requires the configured organiser code.
     [HttpPost("register")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
     public async Task<IActionResult> Register(RegisterRequest request)
@@ -48,7 +48,7 @@ public class AuthController(RaceDayContext db, IConfiguration configuration) : C
         return Created("/api/profile", ToResponse(user));
     }
 
-    /// <summary>Log in and establish an authenticated cookie session.</summary>
+    ///Log in and establish an authenticated cookie session.
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
@@ -79,7 +79,7 @@ public class AuthController(RaceDayContext db, IConfiguration configuration) : C
         return Ok(new { message = "Login successful.", user = ToResponse(user) });
     }
 
-    /// <summary>Log out and clear the authentication cookie and session.</summary>
+    ///Log out and clear the authentication cookie and session.
     [HttpPost("logout"), Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Logout()
     {
