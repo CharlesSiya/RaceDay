@@ -63,7 +63,7 @@ Part 1 documentation and SQL script are present.
 
 YouTube video:
 
-## AI Disclosure
+My project doesnt run so i cant post a YouTube video
 
 AI tools were used as a supplementary learning and
 development aid during the planning and development
