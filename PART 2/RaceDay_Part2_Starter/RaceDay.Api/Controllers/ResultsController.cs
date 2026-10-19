@@ -23,8 +23,14 @@ public class ResultsController(RaceDayContext db) : ControllerBase
         if (enrolment is null) return NotFound();
         if (enrolment.Category!.Event!.OrganiserId != CurrentUserId) return Forbid();
         if (enrolment.Result is not null) return Conflict(new { message = "A result already exists for this enrolment." });
-        var result = new Result { EnrollmentId = enrollmentId, Position = request.Position,
-            FinishTime = request.FinishTime, PaceMinutesPerKm = request.PaceMinutesPerKm, ResultDate = DateTime.UtcNow };
+        var result = new Result
+        {
+            EnrollmentId = enrollmentId,
+            Position = request.Position,
+            FinishTime = request.FinishTime,
+            PaceMinutesPerKm = request.PaceMinutesPerKm,
+            ResultDate = DateTime.UtcNow
+        };
         db.Results.Add(result);
         await db.SaveChangesAsync();
         return Created($"/api/results/{result.ResultId}", result);
@@ -36,8 +42,15 @@ public class ResultsController(RaceDayContext db) : ControllerBase
     {
         var results = await db.Results.Include(r => r.Enrollment).ThenInclude(e => e!.Category).ThenInclude(c => c!.Event)
             .Where(r => r.Enrollment!.ParticipantId == CurrentUserId)
-            .Select(r => new { r.ResultId, r.FinishTime, r.Position, r.PaceMinutesPerKm, r.ResultDate,
-                EventName = r.Enrollment!.Category!.Event!.EventName, CategoryName = r.Enrollment.Category.CategoryName })
+            .Select(r => new {
+                r.ResultId,
+                r.FinishTime,
+                r.Position,
+                r.PaceMinutesPerKm,
+                r.ResultDate,
+                EventName = r.Enrollment!.Category!.Event!.EventName,
+                CategoryName = r.Enrollment.Category.CategoryName
+            })
             .ToListAsync();
         return Ok(results);
     }
