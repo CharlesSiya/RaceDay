@@ -28,8 +28,14 @@ public class CategoriesController(RaceDayContext db) : ControllerBase
         var ev = await db.Events.FindAsync(eventId);
         if (ev is null) return NotFound();
         if (ev.OrganiserId != CurrentUserId) return Forbid();
-        var category = new Category { EventId = eventId, CategoryName = request.CategoryName.Trim(),
-            DistanceKm = request.DistanceKm, MaxParticipants = request.MaxParticipants, EntryFee = request.EntryFee };
+        var category = new Category
+        {
+            EventId = eventId,
+            CategoryName = request.CategoryName.Trim(),
+            DistanceKm = request.DistanceKm,
+            MaxParticipants = request.MaxParticipants,
+            EntryFee = request.EntryFee
+        };
         db.Categories.Add(category);
         await db.SaveChangesAsync();
         return Created($"/api/events/{eventId}/categories/{category.CategoryId}", category);
