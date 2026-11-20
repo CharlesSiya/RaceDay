@@ -1,1 +1,14 @@
-@if(TempData["Message"] is string m){<div class="alert alert-success">@m</div>}@if(TempData["Error"] is string e){<div class="alert alert-warning">@e</div>}@if(!ViewData.ModelState.IsValid){<div asp-validation-summary="All" class="alert alert-danger"></div>}
+@if (TempData["Message"] is string m)
+{
+    <div class="alert alert-success">@m</div>
+}
+
+@if (TempData["Error"] is string e)
+{
+    <div class="alert alert-warning">@e</div>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+}

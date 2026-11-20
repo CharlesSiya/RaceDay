@@ -1,5 +1,78 @@
 @model JsonDocument?
 @using System.Text.Json
-@{ ViewData["Title"]="My profile"; }
+
+@{
+    ViewData["Title"] = "My profile";
+}
+
 <h1>My profile</h1>
-@if(Model is not null){var u=Model.RootElement;var photo=u.TryGetProperty("profileImageUrl",out var p)?p.GetString():null;<div class="row g-4"><div class="col-lg-4"><div class="card p-4 text-center">@if(!string.IsNullOrWhiteSpace(photo)){<img src="@photo" class="profile-photo mb-3" alt="Profile picture"/>}else{<div class="profile-placeholder mb-3">👤</div>}<h2 class="h5">@u.GetProperty("firstName").GetString() @u.GetProperty("lastName").GetString()</h2><p class="text-secondary">@u.GetProperty("role").GetString()</p><form asp-action="UploadPhoto" method="post" enctype="multipart/form-data"><label class="form-label">Profile picture</label><input name="profilePicture" type="file" accept="image/png,image/jpeg,image/webp" class="form-control mb-3" required/><button class="btn btn-outline-primary w-100">Upload picture</button></form></div></div><div class="col-lg-8"><form asp-action="Update" method="post" class="card p-4"><h2 class="h5">Personal information</h2><div class="mb-3"><label class="form-label">First name</label><input name="firstName" class="form-control" value="@u.GetProperty("firstName").GetString()" required/></div><div class="mb-3"><label class="form-label">Last name</label><input name="lastName" class="form-control" value="@u.GetProperty("lastName").GetString()" required/></div><div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="@u.GetProperty("email").GetString()" required/></div><button class="btn btn-primary">Update profile</button></form></div></div>}else{<div class="alert alert-warning">Could not load your profile. Please sign in again.</div>}
+
+@if (Model is not null)
+{
+    var u = Model.RootElement;
+    var photo = u.TryGetProperty("profileImageUrl", out var p)
+        ? p.GetString()
+        : null;
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card p-4 text-center">
+                @if (!string.IsNullOrWhiteSpace(photo))
+                {
+                    <img src="@photo" class="profile-photo mb-3" alt="Profile picture"/>
+                }
+                else
+                {
+                    <div class="profile-placeholder mb-3">👤</div>
+                }
+
+                <h2 class="h5">
+                    @u.GetProperty("firstName").GetString()
+                    @u.GetProperty("lastName").GetString()
+                </h2>
+
+                <p class="text-secondary">@u.GetProperty("role").GetString()</p>
+
+                <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
+                    <label class="form-label">Profile picture</label>
+                    <input name="profilePicture" type="file"
+                           accept="image/png,image/jpeg,image/webp"
+                           class="form-control mb-3" required/>
+                    <button class="btn btn-outline-primary w-100">Upload picture</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <form asp-action="Update" method="post" class="card p-4">
+                <h2 class="h5">Personal information</h2>
+
+                <div class="mb-3">
+                    <label class="form-label">First name</label>
+                    <input name="firstName" class="form-control"
+                           value="@u.GetProperty("firstName").GetString()" required/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Last name</label>
+                    <input name="lastName" class="form-control"
+                           value="@u.GetProperty("lastName").GetString()" required/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input name="email" type="email" class="form-control"
+                           value="@u.GetProperty("email").GetString()" required/>
+                </div>
+
+                <button class="btn btn-primary">Update profile</button>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        Could not load your profile. Please sign in again.
+    </div>
+}
