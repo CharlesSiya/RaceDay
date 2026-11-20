@@ -1,0 +1,67 @@
+@model JsonDocument?
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "My results";
+
+    var items = Model?.RootElement.ValueKind == JsonValueKind.Array
+        ? Model.RootElement.EnumerateArray().ToList()
+        : new List<JsonElement>();
+}
+
+<h1>My race results</h1>
+<p class="text-secondary">Your personal performance history across completed events.</p>
+
+@if (items.Count == 0)
+{
+    <div class="alert alert-info">
+        You do not have published race results yet.
+        Your Organiser will capture your result after the event.
+    </div>
+}
+else
+{
+    <div class="table-responsive card p-3">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Event date</th>
+                    <th>Category</th>
+                    <th>Finish time</th>
+                    <th>Finishing position</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var x in items)
+                {
+                    var pos = x.GetProperty("position").GetInt32();
+                    var suffix = pos % 100 is 11 or 12 or 13
+                        ? "th"
+                        : pos % 10 == 1 ? "st"
+                        : pos % 10 == 2 ? "nd"
+                        : pos % 10 == 3 ? "rd"
+                        : "th";
+
+                    var total = x.TryGetProperty("finisherCount", out var count)
+                        ? count.GetInt32()
+                        : 0;
+
+                    <tr>
+                        <td class="fw-semibold">@x.GetProperty("eventName").GetString()</td>
+                        <td>@DateTime.Parse(x.GetProperty("eventDate").ToString()).ToString("dd MMM yyyy")</td>
+                        <td>@x.GetProperty("categoryName").GetString()</td>
+                        <td>@x.GetProperty("finishTime").ToString()</td>
+                        <td>
+                            <strong>@pos@ suffix</strong>
+                            @if (total > 0)
+                            {
+                                <span class="text-secondary"> out of @total finishers</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
